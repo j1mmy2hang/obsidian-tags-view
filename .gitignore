@@ -1,0 +1,11 @@
+# Local development: the vault plugin folder install.sh copies into.
+.dev-vault
+
+# Plugin state, written by Obsidian at runtime.
+data.json
+
+# Local Claude Code settings.
+.claude/
+
+# macOS
+.DS_Store

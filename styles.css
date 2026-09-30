@@ -1,0 +1,79 @@
+/* The core pane's own rules are keyed to .tag-pane-tag and come with Obsidian,
+   so rows here reuse those classes. The only thing left to add is hiding rows
+   that the search filter rules out. */
+.tags-view-container .tree-item.is-filtered-out {
+  display: none;
+}
+
+/* Tags View's search pane, split off below it in the right sidebar. It is
+   only ever a search, so its tab bar says nothing and is hidden. */
+.workspace-tabs.tags-view-search-pane > .workspace-tab-header-container {
+  display: none;
+}
+
+/* Only the query and the results. The Match case toggle (Aa) and the Search
+   settings button go, and so does the settings panel they open; main.js pins
+   collapsed results on and the rest off. */
+.tags-view-search-pane .global-search-input-container .input-right-decorator,
+.tags-view-search-pane .search-row > .clickable-icon,
+.tags-view-search-pane .search-params {
+  display: none;
+}
+
+/* The sort dropdown's hover. Core's generic `.dropdown:hover` outranks the
+   search pane's own flat rule, so on hover the menu turned into a raised
+   input box: a shadow and a background fill, 24px tall, next to the result
+   count whose hover is a plain tint 22px tall. Give it the result count's
+   hover (core's .clickable-icon:hover) and the result count's height (the
+   same 4px above and below one tight line of 11px text). */
+.tags-view-search-pane .search-results-info .dropdown {
+  height: auto;
+  padding-top: var(--size-4-1);
+  padding-bottom: var(--size-4-1);
+  line-height: var(--line-height-tight);
+  border-radius: var(--clickable-icon-radius);
+}
+
+.tags-view-search-pane .search-results-info .dropdown:not(:disabled):not(.mod-disabled):hover {
+  box-shadow: none;
+  background-color: var(--background-modifier-hover);
+}
+
+/* No search box at all: the pane is only ever a tag search, and the tag is
+   what was clicked. What the × did lives in the results row now. */
+.tags-view-search-pane .search-row {
+  display: none;
+}
+
+/* The results row as three columns: the count on the left, the sort order
+   centred on the pane, the close button on the right. 1fr either side of
+   the middle keeps the sort centred whatever the count's width. */
+.tags-view-search-pane .search-results-info {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+}
+
+.tags-view-search-pane .search-results-info > .search-results-result-count {
+  justify-self: start;
+}
+
+/* A select is as wide as its longest option, which left the arrow floating
+   far from a short label. field-sizing: content (Chromium 123+) fits it to
+   the option that is actually chosen. */
+.tags-view-search-pane .search-results-info > .dropdown {
+  justify-self: center;
+  max-width: 100%;
+  field-sizing: content;
+}
+
+.tags-view-search-pane .search-results-info > .tags-view-search-close {
+  justify-self: end;
+}
+
+/* Sized like the result count beside it: the same 4px / 6px padding around
+   a 14px icon, so all three controls in the row share one height. */
+.tags-view-search-pane .tags-view-search-close {
+  padding: var(--size-4-1) 6px;
+  --icon-size: var(--icon-xs);
+}

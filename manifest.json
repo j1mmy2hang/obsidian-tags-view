@@ -1,0 +1,9 @@
+{
+  "id": "tags-view",
+  "name": "Tags View",
+  "version": "1.0.0",
+  "minAppVersion": "1.4.0",
+  "description": "A copy of the core Tags pane that can hide tags you choose, without touching the notes that carry them.",
+  "author": "Jimmy Zhang",
+  "isDesktopOnly": false
+}
