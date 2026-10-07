@@ -23,6 +23,7 @@ const {
   Setting,
   SearchComponent,
   Menu,
+  Platform,
   setIcon,
   setTooltip,
   debounce,
@@ -484,7 +485,7 @@ module.exports = class TagsViewPlugin extends Plugin {
     const original = this.originalOpenSearch;
     const plugin = this;
     this.openSearchWrapper = function (query, ...rest) {
-      const tag = plugin._loaded && typeof query === "string" && /^tag:#?([^\s#"]+)$/.exec(query.trim());
+      const tag = plugin._loaded && !Platform.isPhone && typeof query === "string" && /^tag:#?([^\s#"]+)$/.exec(query.trim());
       if (tag) {
         plugin.openTagSearch("#" + tag[1]);
         return;
@@ -573,6 +574,16 @@ module.exports = class TagsViewPlugin extends Plugin {
   /* Clicks are queued: a second click while the pane is still being built
      would otherwise find no pane yet and split a second one. */
   showSearch(query, anchor) {
+    /* A phone cannot split a sidebar: core's createLeafBySplit falls back to
+       a new tab in the same drawer and makes it active, so the view stops
+       being the tab showing and syncSearchPane closes the pane at once. On a
+       phone the search goes to core's own Search instead. */
+    if (Platform.isPhone) {
+      const search = this.app.internalPlugins.getEnabledPluginById("global-search");
+      const open = this.searchPlugin ? this.originalOpenSearch : search && search.openGlobalSearch;
+      if (open) open.call(search, query);
+      return Promise.resolve();
+    }
     this.searchQueue = (this.searchQueue || Promise.resolve())
       .then(() => this.runSearch(query, anchor))
       .catch((e) => console.error(e));
