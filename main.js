@@ -547,10 +547,16 @@ module.exports = class TagsViewPlugin extends Plugin {
       return leaf;
     }
     this.searchLeaf = null;
-    /* After a restart: a right-sidebar tab group holding nothing but a search
-       leaf is this pane. */
+    /* After a restart: a right-sidebar tab group holding nothing but a tag
+       search is this pane. Descriptive View's pane looks the same but holds a
+       property search, so the query tells them apart. */
     for (const candidate of workspace.getLeavesOfType("search")) {
-      if (candidate.getRoot() === workspace.rightSplit && candidate.parent.children.length === 1) {
+      const query = candidate.getViewState().state?.query || "";
+      if (
+        candidate.getRoot() === workspace.rightSplit &&
+        candidate.parent.children.length === 1 &&
+        query.startsWith("tag:")
+      ) {
         this.adopt(candidate);
         return candidate;
       }
