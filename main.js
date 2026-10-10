@@ -389,6 +389,20 @@ class TagsView extends ItemView {
      Explorer's place on the left. */
   openSearch(tag) {
     this.plugin.showSearch("tag:" + tag, this.leaf);
+    this.openMap(tag);
+  }
+
+  /* A tag's map is the note named after it (case aside, like tags) whose
+     `descriptive` includes "map". A nested tag looks for its last part, since
+     a file name cannot hold "/". If there is one, it opens in a new tab. */
+  openMap(tag) {
+    const name = tag.replace(/^#/, "").split("/").pop().toLowerCase();
+    const map = this.app.vault.getMarkdownFiles().find((file) => {
+      if (file.basename.toLowerCase() !== name) return false;
+      const value = this.app.metadataCache.getFileCache(file)?.frontmatter?.descriptive;
+      return [].concat(value ?? []).some((v) => String(v).toLowerCase() === "map");
+    });
+    if (map) this.app.workspace.getLeaf("tab").openFile(map);
   }
 
 
