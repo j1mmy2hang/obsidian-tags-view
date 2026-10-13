@@ -389,20 +389,7 @@ class TagsView extends ItemView {
      Explorer's place on the left. */
   openSearch(tag) {
     this.plugin.showSearch("tag:" + tag, this.leaf);
-    this.openMap(tag);
-  }
-
-  /* A tag's map is the note named after it (case aside, like tags) whose
-     `descriptive` includes "map". A nested tag looks for its last part, since
-     a file name cannot hold "/". If there is one, it opens in a new tab. */
-  openMap(tag) {
-    const name = tag.replace(/^#/, "").split("/").pop().toLowerCase();
-    const map = this.app.vault.getMarkdownFiles().find((file) => {
-      if (file.basename.toLowerCase() !== name) return false;
-      const value = this.app.metadataCache.getFileCache(file)?.frontmatter?.descriptive;
-      return [].concat(value ?? []).some((v) => String(v).toLowerCase() === "map");
-    });
-    if (map) this.app.workspace.getLeaf("tab").openFile(map);
+    this.plugin.openMap(tag);
   }
 
 
@@ -518,11 +505,39 @@ module.exports = class TagsViewPlugin extends Plugin {
   }
 
   /* Bring Tags View forward in its own tab group (opening it if it was
-     closed), then run the search in the pane below it. Tags View first: its
-     pane closes whenever Tags View is not the tab showing. */
+     closed), open the tag's map note if it has one, then run the search in
+     the pane below it. Tags View first: its pane closes whenever Tags View is
+     not the tab showing. */
   async openTagSearch(tag) {
     const leaf = await this.activate();
-    if (leaf) await this.showSearch("tag:" + tag, leaf);
+    if (!leaf) return;
+    this.openMap(tag);
+    await this.showSearch("tag:" + tag, leaf);
+  }
+
+  /* A tag's map is the note named after it (case aside, like tags) whose
+     `descriptive` includes "map". An alias counts as a name, though the file
+     name wins a tie. A nested tag looks for its last part, since a file name
+     cannot hold "/". If there is one, it comes forward: its tab
+     if it is already open, otherwise a new tab. */
+  openMap(tag) {
+    const name = tag.replace(/^#/, "").split("/").pop().toLowerCase();
+    const cache = this.app.metadataCache;
+    const isMap = (file) => {
+      const value = cache.getFileCache(file)?.frontmatter?.descriptive;
+      return [].concat(value ?? []).some((v) => String(v).toLowerCase() === "map");
+    };
+    const named = (file) => {
+      const fm = cache.getFileCache(file)?.frontmatter;
+      return [].concat(fm?.aliases ?? fm?.alias ?? []).some((a) => String(a).toLowerCase() === name);
+    };
+    const files = this.app.vault.getMarkdownFiles().filter(isMap);
+    const map = files.find((file) => file.basename.toLowerCase() === name) || files.find(named);
+    if (!map) return;
+    const workspace = this.app.workspace;
+    const open = workspace.getLeavesOfType("markdown").find((l) => l.getRoot() === workspace.rootSplit && l.view.file === map);
+    if (open) workspace.setActiveLeaf(open, { focus: true });
+    else workspace.getLeaf("tab").openFile(map);
   }
 
   /* The search pane belongs to Tags View: the moment Tags View is not the tab
